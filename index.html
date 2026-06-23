@@ -305,10 +305,10 @@ async function loadCrmData() {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ ad_ids: adIds, date_from: dateFrom, date_to: dateTo }),
-      mode: 'no-cors'
+
     });
   } catch(e) {
-    console.log('Webhook sent (no-cors mode)');
+
   }
 
   showCrmStatus('Make is fetching CRM data… this takes about 20–30 seconds.');

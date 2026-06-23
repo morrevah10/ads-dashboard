@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="he" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Facebook Ads Dashboard</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #f7f7f5;
+    --surface: #ffffff;
+    --border: #e4e4e0;
+    --border-light: #efefec;
+    --text-primary: #1a1a18;
+    --text-secondary: #6b6b67;
+    --text-muted: #a0a09c;
+    --accent: #1a1a18;
+    --green: #1a7a4a;
+    --green-bg: #edf7f1;
+    --amber: #92600a;
+    --amber-bg: #fef7ec;
+    --red: #b83232;
+    --red-bg: #fdf0f0;
+    --blue: #1a4fa0;
+    --blue-bg: #eef3fc;
+    --purple: #6b21a8;
+    --purple-bg: #f3e8ff;
+    --radius-sm: 6px;
+    --radius-md: 10px;
+    --radius-lg: 14px;
+    --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #111110;
+      --surface: #1c1c1a;
+      --border: #2e2e2b;
+      --border-light: #252523;
+      --text-primary: #f0f0ed;
+      --text-secondary: #8a8a85;
+      --text-muted: #555552;
+      --green: #4ade80; --green-bg: #0d2b1a;
+      --amber: #fbbf24; --amber-bg: #251c08;
+      --red: #f87171;   --red-bg: #2a1010;
+      --blue: #60a5fa;  --blue-bg: #0d1a2e;
+      --purple: #c084fc; --purple-bg: #1e0a2e;
+    }
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text-primary);
+    min-height: 100vh;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  .page { max-width: 1400px; margin: 0 auto; padding: 2rem 1.5rem; }
+
+  header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem; }
+  .header-left h1 { font-size: 20px; font-weight: 600; letter-spacing: -0.3px; }
+  .header-left p { font-size: 13px; color: var(--text-secondary); margin-top: 3px; }
+  .header-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+
+  .range-btns { display: flex; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 3px; gap: 2px; }
+  .range-btn { font-size: 13px; padding: 5px 13px; border: none; border-radius: var(--radius-sm); background: transparent; color: var(--text-secondary); cursor: pointer; font-family: inherit; transition: all 0.15s; }
+  .range-btn:hover { color: var(--text-primary); }
+  .range-btn.active { background: var(--accent); color: #fff; font-weight: 500; }
+
+  .icon-btn {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 13px; padding: 6px 14px;
+    border: 1px solid var(--border); border-radius: var(--radius-md);
+    background: var(--surface); color: var(--text-secondary);
+    cursor: pointer; font-family: inherit; transition: all 0.15s;
+  }
+  .icon-btn:hover { color: var(--text-primary); border-color: var(--text-muted); }
+  .icon-btn svg { width: 14px; height: 14px; flex-shrink: 0; }
+  .crm-btn { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .crm-btn:hover { opacity: 0.85; color: #fff; border-color: var(--accent); }
+  .crm-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  .summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 1.5rem; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1.1rem 1.25rem; box-shadow: var(--shadow); }
+  .card-label { font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); margin-bottom: 8px; }
+  .card-value { font-size: 24px; font-weight: 600; letter-spacing: -0.5px; line-height: 1; }
+
+  .section-label {
+    font-size: 11px; font-weight: 600; text-transform: uppercase;
+    letter-spacing: 0.06em; color: var(--text-muted);
+    margin-bottom: 10px; margin-top: 1.5rem;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .section-label .line { flex: 1; height: 1px; background: var(--border); }
+
+  .table-container { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; box-shadow: var(--shadow); }
+
+  table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+  thead { background: var(--bg); }
+  th {
+    padding: 10px 12px; text-align: left;
+    font-size: 11px; font-weight: 600; text-transform: uppercase;
+    letter-spacing: 0.06em; color: var(--text-muted);
+    border-bottom: 1px solid var(--border);
+    cursor: pointer; user-select: none; white-space: nowrap;
+  }
+  th:hover { color: var(--text-secondary); }
+  th.sorted { color: var(--text-primary); }
+  .sort-icon { margin-left: 3px; opacity: 0.5; font-style: normal; }
+  th.sorted .sort-icon { opacity: 1; }
+
+  td { padding: 10px 12px; border-bottom: 1px solid var(--border-light); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13px; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: var(--bg); }
+
+  .col-adname { width: 16%; }
+  .col-camp   { width: 13%; }
+  .col-adset  { width: 13%; }
+  .col-adid   { width: 12%; }
+  .col-spent  { width: 9%; text-align: right; }
+  .col-fbleads{ width: 7%; text-align: right; }
+  .col-cpl    { width: 10%; text-align: right; }
+  .col-crmleads { width: 8%; text-align: right; }
+  .col-sales  { width: 6%; text-align: right; }
+  .col-revenue{ width: 9%; text-align: right; }
+
+  .num { text-align: right; font-variant-numeric: tabular-nums; }
+  .muted { color: var(--text-muted); }
+  .secondary { color: var(--text-secondary); }
+
+  .badge { display: inline-flex; align-items: center; font-size: 12px; font-weight: 500; padding: 3px 8px; border-radius: 99px; }
+  .badge-green  { background: var(--green-bg);  color: var(--green); }
+  .badge-amber  { background: var(--amber-bg);  color: var(--amber); }
+  .badge-red    { background: var(--red-bg);    color: var(--red); }
+
+  .crm-cell { color: var(--text-muted); font-style: italic; font-size: 12px; }
+  .crm-loading { color: var(--text-muted); }
+
+  .divider-th { border-left: 2px solid var(--border); }
+  .divider-td { border-left: 2px solid var(--border-light); }
+
+  .status-row td { text-align: center; padding: 3rem; color: var(--text-secondary); }
+
+  .crm-status-bar {
+    display: none; align-items: center; gap: 10px;
+    padding: 10px 16px; background: var(--blue-bg);
+    border: 1px solid var(--blue); border-radius: var(--radius-md);
+    margin-bottom: 1rem; font-size: 13px; color: var(--blue);
+  }
+  .crm-status-bar.visible { display: flex; }
+
+  .spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid currentColor; border-top-color: transparent; border-radius: 50%; animation: spin 0.7s linear infinite; vertical-align: middle; }
+  .spinner-lg { width: 16px; height: 16px; border-color: var(--border); border-top-color: var(--text-secondary); margin-right: 8px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  footer { margin-top: 1.25rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
+  .footer-text { font-size: 12px; color: var(--text-muted); }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header>
+    <div class="header-left">
+      <h1>Facebook Ads Dashboard</h1>
+      <p id="subtitle">Loading data…</p>
+    </div>
+    <div class="header-right">
+      <div class="range-btns">
+        <button class="range-btn" data-days="1">Today</button>
+        <button class="range-btn" data-days="7">7 days</button>
+        <button class="range-btn active" data-days="30">30 days</button>
+      </div>
+      <button class="icon-btn" onclick="loadData()">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M13.5 8A5.5 5.5 0 1 1 8 2.5c1.8 0 3.4.87 4.4 2.2"/>
+          <polyline points="13.5 2 13.5 5 10.5 5"/>
+        </svg>
+        Refresh
+      </button>
+      <button class="icon-btn crm-btn" id="crm-btn" onclick="loadCrmData()">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="8" cy="8" r="6"/><path d="M8 5v3l2 1"/>
+        </svg>
+        Load CRM Data
+      </button>
+    </div>
+  </header>
+
+  <div class="summary">
+    <div class="card"><div class="card-label">Total spent</div><div class="card-value" id="s-spent">—</div></div>
+    <div class="card"><div class="card-label">FB leads</div><div class="card-value" id="s-leads">—</div></div>
+    <div class="card"><div class="card-label">Avg. cost / lead</div><div class="card-value" id="s-cpl">—</div></div>
+    <div class="card"><div class="card-label">Active ads</div><div class="card-value" id="s-ads">—</div></div>
+    <div class="card"><div class="card-label">CRM leads</div><div class="card-value" id="s-crmleads">—</div></div>
+    <div class="card"><div class="card-label">Total sales</div><div class="card-value" id="s-sales">—</div></div>
+    <div class="card"><div class="card-label">Total revenue</div><div class="card-value" id="s-revenue">—</div></div>
+  </div>
+
+  <div class="crm-status-bar" id="crm-status-bar">
+    <span class="spinner"></span>
+    <span id="crm-status-text">Sending request to CRM…</span>
+  </div>
+
+  <div class="table-container">
+    <table>
+      <thead>
+        <tr>
+          <th class="col-adname" data-col="ad_name">Ad name <i class="sort-icon">↕</i></th>
+          <th class="col-camp"   data-col="campaign_name">Campaign <i class="sort-icon">↕</i></th>
+          <th class="col-adset"  data-col="adset_name">Ad set <i class="sort-icon">↕</i></th>
+          <th class="col-adid"   data-col="ad_id">Ad ID <i class="sort-icon">↕</i></th>
+          <th class="col-spent num sorted" data-col="spent">Spent <i class="sort-icon">↓</i></th>
+          <th class="col-fbleads num" data-col="leads">FB Leads <i class="sort-icon">↕</i></th>
+          <th class="col-cpl num"     data-col="cpl">Cost / lead <i class="sort-icon">↕</i></th>
+          <th class="col-crmleads num divider-th" data-col="crm_leads">CRM Leads <i class="sort-icon">↕</i></th>
+          <th class="col-sales num"   data-col="sales_count">Sales <i class="sort-icon">↕</i></th>
+          <th class="col-revenue num" data-col="total_amount">Revenue <i class="sort-icon">↕</i></th>
+        </tr>
+      </thead>
+      <tbody id="tbody">
+        <tr class="status-row"><td colspan="10"><span class="spinner spinner-lg"></span> Loading…</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <footer>
+    <span class="footer-text" id="last-updated"></span>
+    <span class="footer-text">Facebook Marketing API · Kaveret CRM</span>
+  </footer>
+
+</div>
+<script>
+const SHEET_ID   = '1fuBgE5_GVRzKURCcybea56r2MgtgPMhR7JT1SCzJuwE';
+const FB_SHEET   = 'ads_data';
+const CRM_SHEET  = 'crm_data';
+const MAKE_WEBHOOK = 'https://hook.eu1.make.com/17416geo8wt1qfmztoyzgjuedt1vmcys';
+
+const sheetUrl = (tab) =>
+  `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(tab)}&cachebust=${Date.now()}`;
+
+let allRows   = [];
+let crmData   = {};
+let sortCol   = 'spent';
+let sortDir   = -1;
+let activeDays = 30;
+let crmLoaded  = false;
+
+function parseSheetDate(cell) {
+  if (!cell) return '';
+  if (cell.f) return String(cell.f).slice(0, 10);
+  const v = cell.v;
+  if (!v) return '';
+  if (typeof v === 'string') return v.slice(0, 10);
+  const m = String(v).match(/Date\((\d+),(\d+),(\d+)\)/);
+  if (m) return `${m[1]}-${String(+m[2]+1).padStart(2,'0')}-${String(+m[3]).padStart(2,'0')}`;
+  return String(v).slice(0, 10);
+}
+
+async function loadData() {
+  setLoading();
+  try {
+    const res  = await fetch(sheetUrl(FB_SHEET));
+    const text = await res.text();
+    const json = JSON.parse(text.replace(/^[^(]+\(/, '').replace(/\);?\s*$/, ''));
+    allRows = (json.table.rows || []).map(r => {
+      const c = r.c || [];
+      return {
+        date_start:    parseSheetDate(c[0]),
+        campaign_name: c[2]?.v || '',
+        adset_name:    c[3]?.v || '',
+        ad_id:         String(c[4]?.v || ''),
+        ad_name:       c[5]?.v || '',
+        spent:         parseFloat(c[7]?.v || 0),
+        leads:         parseInt(c[8]?.v || 0),
+      };
+    }).filter(r => r.date_start);
+    document.getElementById('last-updated').textContent = 'Updated ' + new Date().toLocaleTimeString();
+    render();
+  } catch(e) {
+    document.getElementById('tbody').innerHTML =
+      `<tr class="status-row"><td colspan="10">Could not load Facebook data. Check that the Google Sheet is shared publicly.</td></tr>`;
+    document.getElementById('subtitle').textContent = 'Connection error';
+    console.error(e);
+  }
+}
+
+async function loadCrmData() {
+  const rows = aggregateByAd(activeDays);
+  if (rows.length === 0) return;
+
+  const adIds    = rows.map(r => r.ad_id);
+  const dateFrom = getFromDate(activeDays);
+  const dateTo   = new Date().toISOString().slice(0, 10);
+
+  const btn = document.getElementById('crm-btn');
+  btn.disabled = true;
+  showCrmStatus('Sending request to Make…');
+
+  try {
+    await fetch(MAKE_WEBHOOK, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ad_ids: adIds, date_from: dateFrom, date_to: dateTo }),
+      mode: 'no-cors'
+    });
+  } catch(e) {
+    console.log('Webhook sent (no-cors mode)');
+  }
+
+  showCrmStatus('Make is fetching CRM data… this takes about 20–30 seconds.');
+  await pollCrmSheet(dateTo);
+  btn.disabled = false;
+}
+
+async function pollCrmSheet(expectedDate) {
+  const MAX_ATTEMPTS = 12;
+  const INTERVAL_MS  = 5000;
+
+  for (let i = 0; i < MAX_ATTEMPTS; i++) {
+    await sleep(INTERVAL_MS);
+    showCrmStatus(`Waiting for CRM data… (${(i+1) * 5}s)`);
+    try {
+      const res  = await fetch(sheetUrl(CRM_SHEET));
+      const text = await res.text();
+      const json = JSON.parse(text.replace(/^[^(]+\(/, '').replace(/\);?\s*$/, ''));
+      const rows = json.table.rows || [];
+      if (rows.length > 0) {
+        crmData = {};
+        rows.forEach(r => {
+          const c = r.c || [];
+          const id = String(c[0]?.v || '');
+          if (id) {
+            crmData[id] = {
+              crm_leads:    parseInt(c[1]?.v || 0),
+              sales_count:  parseInt(c[2]?.v || 0),
+              total_amount: parseFloat(c[3]?.v || 0),
+            };
+          }
+        });
+        crmLoaded = true;
+        hideCrmStatus();
+        render();
+        updateCrmSummary();
+        return;
+      }
+    } catch(e) { console.error('Poll error:', e); }
+  }
+  showCrmStatus('CRM data did not arrive in time. Try clicking "Load CRM Data" again.', true);
+}
+
+function updateCrmSummary() {
+  const totals = Object.values(crmData).reduce((acc, r) => {
+    acc.crm_leads    += r.crm_leads;
+    acc.sales_count  += r.sales_count;
+    acc.total_amount += r.total_amount;
+    return acc;
+  }, { crm_leads: 0, sales_count: 0, total_amount: 0 });
+
+  document.getElementById('s-crmleads').textContent = totals.crm_leads;
+  document.getElementById('s-sales').textContent    = totals.sales_count;
+  document.getElementById('s-revenue').textContent  = fmt(totals.total_amount);
+}
+
+function showCrmStatus(msg, isError) {
+  const bar = document.getElementById('crm-status-bar');
+  bar.classList.add('visible');
+  if (isError) bar.style.background = 'var(--red-bg)', bar.style.borderColor = 'var(--red)', bar.style.color = 'var(--red)';
+  document.getElementById('crm-status-text').textContent = msg;
+}
+function hideCrmStatus() {
+  document.getElementById('crm-status-bar').classList.remove('visible');
+}
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+function getFromDate(days) {
+  const d = new Date();
+  d.setDate(d.getDate() - days + 1);
+  return d.toISOString().slice(0, 10);
+}
+
+function aggregateByAd(days) {
+  const from = getFromDate(days);
+  const to   = new Date().toISOString().slice(0, 10);
+  const map  = {};
+  allRows.forEach(row => {
+    if (row.date_start < from || row.date_start > to) return;
+    if (!map[row.ad_id]) {
+      map[row.ad_id] = { ad_id: row.ad_id, ad_name: row.ad_name, campaign_name: row.campaign_name, adset_name: row.adset_name, spent: 0, leads: 0 };
+    }
+    map[row.ad_id].spent += row.spent;
+    map[row.ad_id].leads += row.leads;
+  });
+  return Object.values(map).map(r => ({ ...r, cpl: r.leads > 0 ? r.spent / r.leads : Infinity }));
+}
+
+function fmt(n)  { return '₪' + Math.round(n).toLocaleString(); }
+function fmtD(n) { return '₪' + n.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 1 }); }
+function esc(s)  { return String(s).replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+function setLoading() {
+  document.getElementById('tbody').innerHTML = `<tr class="status-row"><td colspan="10"><span class="spinner spinner-lg"></span> Refreshing…</td></tr>`;
+  ['s-spent','s-leads','s-cpl','s-ads'].forEach(id => document.getElementById(id).textContent = '—');
+}
+
+function render() {
+  let rows = aggregateByAd(activeDays);
+
+  rows.sort((a, b) => {
+    let av = a[sortCol]; let bv = b[sortCol];
+    if (sortCol === 'crm_leads' || sortCol === 'sales_count' || sortCol === 'total_amount') {
+      av = crmData[a.ad_id]?.[sortCol] ?? -1;
+      bv = crmData[b.ad_id]?.[sortCol] ?? -1;
+    }
+    if (av === Infinity) av = 9999999;
+    if (bv === Infinity) bv = 9999999;
+    if (typeof av === 'string') return sortDir * av.localeCompare(bv);
+    return sortDir * (av - bv);
+  });
+
+  const totalSpent = rows.reduce((s, r) => s + r.spent, 0);
+  const totalLeads = rows.reduce((s, r) => s + r.leads, 0);
+  const avgCpl     = totalLeads > 0 ? totalSpent / totalLeads : 0;
+
+  document.getElementById('s-spent').textContent = fmt(totalSpent);
+  document.getElementById('s-leads').textContent = totalLeads;
+  document.getElementById('s-cpl').textContent   = avgCpl > 0 ? fmtD(avgCpl) : '—';
+  document.getElementById('s-ads').textContent   = rows.length;
+
+  const label = activeDays === 1 ? 'today' : `last ${activeDays} days`;
+  document.getElementById('subtitle').textContent = `${label} · ${rows.length} active ad${rows.length !== 1 ? 's' : ''}`;
+
+  if (rows.length === 0) {
+    document.getElementById('tbody').innerHTML = `<tr class="status-row"><td colspan="10">No data for this period.</td></tr>`;
+    return;
+  }
+
+  document.getElementById('tbody').innerHTML = rows.map(r => {
+    const cplVal = r.cpl === Infinity ? null : r.cpl;
+    let cplBadge = cplVal !== null
+      ? `<span class="badge ${cplVal < 100 ? 'badge-green' : cplVal < 200 ? 'badge-amber' : 'badge-red'}">${fmtD(cplVal)}</span>`
+      : `<span class="muted">—</span>`;
+
+    let crmLeadsCell, salesCell, revenueCell;
+    if (!crmLoaded) {
+      crmLeadsCell = salesCell = revenueCell = `<span class="crm-cell">—</span>`;
+    } else {
+      const crm = crmData[r.ad_id];
+      if (crm) {
+        crmLeadsCell = crm.crm_leads > 0 ? crm.crm_leads : `<span class="muted">0</span>`;
+        salesCell    = crm.sales_count > 0 ? crm.sales_count : `<span class="muted">0</span>`;
+        revenueCell  = crm.total_amount > 0 ? fmt(crm.total_amount) : `<span class="muted">—</span>`;
+      } else {
+        crmLeadsCell = salesCell = revenueCell = `<span class="muted">0</span>`;
+      }
+    }
+
+    return `<tr>
+      <td class="col-adname" title="${esc(r.ad_name)}">${esc(r.ad_name)}</td>
+      <td class="col-camp secondary" title="${esc(r.campaign_name)}">${esc(r.campaign_name)}</td>
+      <td class="col-adset secondary" title="${esc(r.adset_name)}">${esc(r.adset_name)}</td>
+      <td class="col-adid secondary" title="${esc(r.ad_id)}" style="font-size:11px">${esc(r.ad_id)}</td>
+      <td class="col-spent num">${fmt(r.spent)}</td>
+      <td class="col-fbleads num${r.leads === 0 ? ' muted' : ''}">${r.leads === 0 ? '—' : r.leads}</td>
+      <td class="col-cpl num">${cplBadge}</td>
+      <td class="col-crmleads num divider-td">${crmLeadsCell}</td>
+      <td class="col-sales num">${salesCell}</td>
+      <td class="col-revenue num">${revenueCell}</td>
+    </tr>`;
+  }).join('');
+}
+
+document.querySelectorAll('.range-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.range-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    activeDays = parseInt(btn.dataset.days);
+    crmLoaded = false;
+    crmData = {};
+    ['s-crmleads','s-sales','s-revenue'].forEach(id => document.getElementById(id).textContent = '—');
+    render();
+  });
+});
+
+document.querySelectorAll('th[data-col]').forEach(th => {
+  th.addEventListener('click', () => {
+    const col = th.dataset.col;
+    sortDir = sortCol === col ? sortDir * -1 : -1;
+    sortCol = col;
+    document.querySelectorAll('th').forEach(t => {
+      t.classList.remove('sorted');
+      t.querySelector('.sort-icon').textContent = '↕';
+    });
+    th.classList.add('sorted');
+    th.querySelector('.sort-icon').textContent = sortDir === -1 ? '↓' : '↑';
+    render();
+  });
+});
+
+loadData();
+</script>
+</body>
+</html>
